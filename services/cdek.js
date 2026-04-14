@@ -221,19 +221,32 @@ async function fetchPickupPoints(cityCode) {
 }
 
 function parseDeliveryPrice(calcData) {
+  const tariffs = Array.isArray(calcData?.tariff_codes) ? calcData.tariff_codes : [];
+  const selected = tariffs.find((item) => Number(item?.tariff_code || 0) === CDEK_TARIFF_CODE) || tariffs[0];
   const direct = Number(
     calcData?.delivery_detail?.total_sum ??
       calcData?.total_sum ??
       calcData?.total_sum_rub ??
       calcData?.total_sum?.value ??
-      calcData?.delivery_detail?.delivery_sum ??
-      calcData?.delivery_sum
+      selected?.total_sum
   );
   if (Number.isFinite(direct)) return Number(direct.toFixed(2));
-  const tariffs = Array.isArray(calcData?.tariff_codes) ? calcData.tariff_codes : [];
-  const selected = tariffs.find((item) => Number(item?.tariff_code || 0) === CDEK_TARIFF_CODE) || tariffs[0];
-  const value = Number(selected?.total_sum ?? selected?.delivery_sum);
-  return Number.isFinite(value) ? Number(value.toFixed(2)) : null;
+
+  const serviceRows = [
+    ...(Array.isArray(calcData?.services) ? calcData.services : []),
+    ...(Array.isArray(selected?.services) ? selected.services : []),
+  ];
+  const servicesTotal = serviceRows.reduce((acc, service) => {
+    const sum = Number(service?.sum ?? service?.total_sum ?? service?.price);
+    return Number.isFinite(sum) && sum > 0 ? acc + sum : acc;
+  }, 0);
+  const deliveryBase = Number(
+    calcData?.delivery_detail?.delivery_sum ?? calcData?.delivery_sum ?? selected?.delivery_sum
+  );
+  if (Number.isFinite(deliveryBase) && servicesTotal > 0) {
+    return Number((deliveryBase + servicesTotal).toFixed(2));
+  }
+  return Number.isFinite(deliveryBase) ? Number(deliveryBase.toFixed(2)) : null;
 }
 
 function extractDeliveryDetails(calcData) {
@@ -244,19 +257,40 @@ function extractDeliveryDetails(calcData) {
     tariffs[0] ||
     null;
   if (!selected && !calcData) return null;
+  const serviceRows = [
+    ...(Array.isArray(selected?.services) ? selected.services : []),
+    ...(Array.isArray(calcData?.services) ? calcData.services : []),
+  ];
+  const seenServices = new Set();
+  const services = serviceRows
+    .map((service) => {
+      const sum = toMoney(service?.sum ?? service?.total_sum ?? service?.price);
+      if (sum === null || sum === 0) return null;
+      const code = String(service?.code || "").trim();
+      const name = String(service?.name || service?.title || code || "Услуга").trim();
+      const dedupeKey = `${code}:${sum}:${name}`;
+      if (seenServices.has(dedupeKey)) return null;
+      seenServices.add(dedupeKey);
+      return { code, name, sum };
+    })
+    .filter(Boolean);
+  const servicesTotal = services.reduce((acc, service) => acc + Number(service.sum || 0), 0);
+  const deliverySum = toMoney(
+    calcData?.delivery_detail?.delivery_sum ?? calcData?.delivery_sum ?? selected?.delivery_sum ?? selected?.total_sum
+  );
+  const totalSum =
+    toMoney(calcData?.delivery_detail?.total_sum ?? calcData?.total_sum ?? selected?.total_sum) ??
+    (deliverySum !== null && servicesTotal > 0 ? Number((deliverySum + servicesTotal).toFixed(2)) : deliverySum);
+
   return {
     tariffCode: toInt(calcData?.tariff_code ?? selected?.tariff_code ?? CDEK_TARIFF_CODE),
     tariffName: String(calcData?.tariff_name ?? selected?.tariff_name ?? selected?.name ?? "").trim() || null,
     periodMin: toInt(calcData?.period_min ?? selected?.period_min ?? calcData?.calendar_min ?? selected?.calendar_min),
     periodMax: toInt(calcData?.period_max ?? selected?.period_max ?? calcData?.calendar_max ?? selected?.calendar_max),
-    deliverySum: toMoney(
-      calcData?.delivery_detail?.delivery_sum ?? calcData?.delivery_sum ?? selected?.delivery_sum ?? selected?.total_sum
-    ),
-    totalSum: toMoney(
-      calcData?.delivery_detail?.total_sum ?? calcData?.total_sum ?? selected?.total_sum ?? calcData?.delivery_sum
-    ),
+    deliverySum,
+    totalSum,
     vatSum: toMoney(calcData?.vat_sum ?? selected?.vat_sum),
-    services: [],
+    services,
   };
 }
 
