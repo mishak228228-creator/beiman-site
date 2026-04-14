@@ -3192,6 +3192,10 @@ a {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --header-height: 132px;
+  }
+
   .header-inner {
     height: auto;
     min-height: auto;
@@ -3225,11 +3229,16 @@ a {
     max-width: none;
     margin: 0;
     justify-content: center;
+    flex-wrap: nowrap;
     border-radius: 16px;
     padding: 6px 8px;
   }
 
   .main-nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
     padding: 9px 12px;
     letter-spacing: 0.08em;
   }
@@ -3432,16 +3441,23 @@ a {
     width: min(1280px, calc(100% - 14px));
   }
 
+  :root {
+    --header-height: 124px;
+  }
+
   .main-nav {
     max-width: 100%;
     gap: 2px;
     padding: 5px 5px;
+    border-radius: 14px;
   }
 
   .main-nav a {
-    font-size: 9px;
-    padding: 8px 10px;
-    letter-spacing: 0.07em;
+    font-size: 8px;
+    padding: 8px 6px;
+    letter-spacing: 0.045em;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .icon-btn {
