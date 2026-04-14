@@ -20,7 +20,7 @@ const CDEK_PACKAGE_WEIGHT_GRAMS = Number(process.env.CDEK_PACKAGE_WEIGHT_GRAMS |
 const CDEK_PACKAGE_LENGTH_CM = Number(process.env.CDEK_PACKAGE_LENGTH_CM || 30);
 const CDEK_PACKAGE_WIDTH_CM = Number(process.env.CDEK_PACKAGE_WIDTH_CM || 20);
 const CDEK_PACKAGE_HEIGHT_CM = Number(process.env.CDEK_PACKAGE_HEIGHT_CM || 8);
-const CURSOR_ASSETS_DIR = "C:/Users/User/.cursor/projects/c-Users-User-Documents/assets";
+const EXTRA_ASSETS_DIR = process.env.EXTRA_ASSETS_DIR || "";
 
 const CDEK_API_BASE_CANDIDATES = Array.from(
   new Set([CDEK_API_BASE, "https://api.edu.cdek.ru/v2"].filter(Boolean))
@@ -404,7 +404,10 @@ app.get("/api/orders", async (_, res) => {
   }
 });
 
-app.use("/assets", express.static(path.resolve(CURSOR_ASSETS_DIR)));
+app.use("/assets", express.static(path.resolve(__dirname, "assets")));
+if (EXTRA_ASSETS_DIR) {
+  app.use("/assets", express.static(path.resolve(EXTRA_ASSETS_DIR)));
+}
 app.use(express.static(path.resolve(__dirname)));
 
 app.get("*", (_, res) => {
