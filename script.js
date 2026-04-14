@@ -1579,7 +1579,7 @@ function renderProductDetail(id) {
       .join("");
   }
 
-  document.title = `${data.title} | BEIMAN`;
+  document.title = `${data.title} | BEIMANS`;
   applySizeAvailability(id);
   renderSizeChart(id);
 }
@@ -1646,7 +1646,7 @@ function showProductView(id) {
 function showCartView() {
   closeSizeChartModal();
   closeAddCartModal();
-  document.title = `Корзина | BEIMAN`;
+  document.title = `Корзина | BEIMANS`;
   setActiveMainNav("catalog");
   catalogSection?.classList.add("is-hidden");
   aboutPage?.classList.add("is-hidden");
@@ -1678,7 +1678,7 @@ function showCartView() {
 function showCheckoutView() {
   closeSizeChartModal();
   closeAddCartModal();
-  document.title = `Оформление заказа | BEIMAN`;
+  document.title = `Оформление заказа | BEIMANS`;
   setActiveMainNav("catalog");
   catalogSection?.classList.add("is-hidden");
   aboutPage?.classList.add("is-hidden");
@@ -1705,7 +1705,7 @@ function showCheckoutView() {
 function showAboutView() {
   closeSizeChartModal();
   closeAddCartModal();
-  document.title = `О компании | BEIMAN`;
+  document.title = `О компании | BEIMANS`;
   setActiveMainNav("about");
   catalogSection?.classList.add("is-hidden");
   contactsPage?.classList.add("is-hidden");
@@ -1731,7 +1731,7 @@ function showAboutView() {
 function showContactsView() {
   closeSizeChartModal();
   closeAddCartModal();
-  document.title = `Контакты | BEIMAN`;
+  document.title = `Контакты | BEIMANS`;
   setActiveMainNav("contacts");
   catalogSection?.classList.add("is-hidden");
   aboutPage?.classList.add("is-hidden");

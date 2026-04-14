@@ -599,14 +599,20 @@ a {
 .sort-select {
   min-width: 160px;
   height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
   background: #0d0d0d;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%23bdbdbd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
   color: #f0f0f0;
   border: 1px solid #3a3a3a;
   border-radius: 8px;
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 600;
-  padding: 0 14px;
+  padding: 0 40px 0 14px;
   cursor: pointer;
   transition: box-shadow 0.28s ease, border-color 0.28s ease;
 }
