@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Каталог товаров | DSCARF</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Каталог: боковые фильтры, сортировка, сетка карточек -->
+    <header class="site-header" id="siteHeader">
+      <div class="container header-inner">
+        <a href="#catalog" class="logo-wordmark">BEIMAN</a>
+        <nav class="main-nav" aria-label="Основное меню">
+          <a href="#catalog" class="is-active" data-nav-view="catalog">Каталог</a>
+          <a href="#about" data-nav-view="about">О компании</a>
+          <a href="#contacts" data-nav-view="contacts">Контакты</a>
+          <a href="https://t.me/beimanns" target="_blank" rel="noopener noreferrer">Поддержка</a>
+        </nav>
+        <div class="header-actions">
+          <button class="icon-btn" id="cartToggleBtn" aria-label="Корзина">
+            🛒
+            <span class="cart-badge is-hidden" id="cartBadge">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-shell">
+    <main>
+      <section class="product-page is-hidden" id="productPage" aria-hidden="true">
+        <div class="container product-page-inner">
+          <button type="button" class="product-back" id="productBack" aria-label="Назад в каталог">
+            ← Каталог
+          </button>
+          <div class="product-detail">
+            <div class="product-detail-visual">
+              <div class="product-detail-media">
+                <img id="productDetailImg" src="" alt="" width="800" height="1000" />
+              </div>
+              <span class="product-badge product-badge--empty" id="productDetailBadge" aria-hidden="true"></span>
+            </div>
+            <div class="product-detail-body">
+              <p class="product-category" id="productDetailCategory"></p>
+              <h1 class="product-detail-title" id="productDetailTitle"></h1>
+              <div class="product-detail-price-row" id="productDetailPrice"></div>
+              <p class="product-detail-lead" id="productDetailLead"></p>
+              <h2 class="product-detail-heading">Характеристики</h2>
+              <ul class="product-detail-specs" id="productDetailSpecs"></ul>
+            </div>
+
+            <div class="product-preorder" id="productPreorder">
+              <div class="product-preorder-sizes">
+                <p class="product-preorder-label">РАЗМЕР</p>
+                <div class="size-chip-row" id="sizeChipRow" role="radiogroup" aria-label="Размер">
+                  <button type="button" class="size-chip" data-size="XS" role="radio" aria-checked="false">
+                    <span class="size-chip-label">XS</span>
+                  </button>
+                  <button type="button" class="size-chip" data-size="S" role="radio" aria-checked="false">
+                    <span class="size-chip-label">S</span>
+                  </button>
+                  <button type="button" class="size-chip" data-size="M" role="radio" aria-checked="false">
+                    <span class="size-chip-label">M</span>
+                  </button>
+                  <button type="button" class="size-chip" data-size="L" role="radio" aria-checked="false">
+                    <span class="size-chip-label">L</span>
+                  </button>
+                  <button type="button" class="size-chip" data-size="XL" role="radio" aria-checked="false">
+                    <span class="size-chip-label">XL</span>
+                  </button>
+                  <button type="button" class="size-chip" data-size="2XL" role="radio" aria-checked="false">
+                    <span class="size-chip-label">2XL</span>
+                  </button>
+                </div>
+                <p class="size-hint" id="sizeHint" role="status" aria-live="polite"></p>
+              </div>
+
+              <button type="button" class="btn-size-chart" id="sizeChartBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M8 4h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4Z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
+                  <path d="M8 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                Таблица размеров
+              </button>
+
+              <div class="product-preorder-cta-row">
+                <button type="button" class="btn-preorder-primary" id="productPreorderBtn">ЗАКАЗАТЬ</button>
+                <button type="button" class="btn-preorder-back" id="productPreorderBack">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M15 6l-6 6 6 6"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  НАЗАД
+                </button>
+              </div>
+
+              <div class="product-preorder-note">
+                <svg class="product-preorder-note-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5" />
+                  <path
+                    fill="currentColor"
+                    d="M12 10.2a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Zm-.8 2.3h1.6V17h-1.6v-4.5Z"
+                  />
+                </svg>
+                <p class="product-preorder-note-text">
+                  <strong>Индивидуальный пошив</strong> — модель создаётся под каждый заказ. Сложная конструкция
+                  требует времени, поэтому срок производства и отправки составляет в течение 2–3 недель
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="size-chart-modal is-hidden" id="sizeChartModal" role="dialog" aria-modal="true" aria-labelledby="sizeChartTitle" aria-hidden="true">
+            <button type="button" class="size-chart-modal-backdrop" id="sizeChartBackdrop" aria-label="Закрыть"></button>
+            <div class="size-chart-modal-card">
+              <div class="size-chart-modal-head">
+                <h2 class="size-chart-modal-title" id="sizeChartTitle">Таблица размеров</h2>
+                <button type="button" class="size-chart-modal-close" id="sizeChartClose" aria-label="Закрыть">
+                  ×
+                </button>
+              </div>
+              <div class="size-chart-modal-body">
+                <p class="size-chart-context" id="sizeChartContext"></p>
+                <table class="size-chart-table">
+                  <thead>
+                    <tr>
+                      <th>Размер</th>
+                      <th>Обхват груди, см</th>
+                      <th>Длина, см</th>
+                      <th>Ширина плеч, см</th>
+                      <th>Рукав, см</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sizeChartBody">
+                    <tr>
+                      <td>XS</td>
+                      <td>92–96</td>
+                      <td>64–66</td>
+                      <td>—</td>
+                      <td>58–60</td>
+                    </tr>
+                    <tr>
+                      <td>S</td>
+                      <td>96–100</td>
+                      <td>66–68</td>
+                      <td>—</td>
+                      <td>60–62</td>
+                    </tr>
+                    <tr>
+                      <td>M</td>
+                      <td>100–104</td>
+                      <td>68–70</td>
+                      <td>—</td>
+                      <td>62–64</td>
+                    </tr>
+                    <tr>
+                      <td>L</td>
+                      <td>104–108</td>
+                      <td>70–72</td>
+                      <td>—</td>
+                      <td>64–66</td>
+                    </tr>
+                    <tr>
+                      <td>XL</td>
+                      <td>108–114</td>
+                      <td>72–74</td>
+                      <td>—</td>
+                      <td>66–68</td>
+                    </tr>
+                    <tr>
+                      <td>2XL</td>
+                      <td>114–120</td>
+                      <td>74–76</td>
+                      <td>—</td>
+                      <td>68–70</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="size-chart-disclaimer">Значения ориентировочные; допустим отклонение ±1–2 см.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="catalog" id="catalog">
+        <div class="container">
+          <div class="category-tabs">
+            <p class="filter-title">Категории</p>
+            <button type="button" class="category-pill is-active" data-category="all">
+              все
+            </button>
+            <button type="button" class="category-pill" data-category="hoodie">худи</button>
+            <button type="button" class="category-pill" data-category="tee">футболки</button>
+          </div>
+
+          <div class="catalog-topbar">
+            <div class="sort-box">
+              <span class="sort-label">СОРТИРОВКА</span>
+              <select class="sort-select" id="sortSelect" aria-label="Сортировка каталога">
+                <option value="new" selected>Новинки</option>
+                <option value="popular">Популярные</option>
+                <option value="price-asc">Цена ↑</option>
+                <option value="price-desc">Цена ↓</option>
+                <option value="name">Название</option>
+              </select>
+            </div>
+            <p class="catalog-count" id="catalogCount">Показано 6 из 6 товаров</p>
+          </div>
+
+          <div class="product-grid" id="productGrid">
+            <article class="product-card product-card--hoodie-featured" data-category="hoodie" data-product-id="real-white">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-08_21-24-44-be7e1c7f-c3e7-496b-ae99-5784770accf7.png"
+                    alt="Белая спортивная куртка Real Madrid"
+                  />
+                  <span class="product-badge">HIT</span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ХУДИ</p>
+                  <h3 class="product-title">ZIP JACKET “REAL” WHITE</h3>
+                  <p class="product-desc">спортивная кофта... </p>
+                  <p class="product-price"><span>5 090 ₽</span> <s>7 990 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+
+            <article class="product-card product-card--hoodie-featured" data-category="hoodie" data-product-id="barca-white">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-08_21-24-40-f0b3b725-8b15-4229-8097-77b86de7e3b5.png"
+                    alt="Чёрная футболка"
+                  />
+                  <span class="product-badge">HIT</span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ХУДИ</p>
+                  <h3 class="product-title">ZIP JACKET “BARCA” WHITE</h3>
+                  <p class="product-desc">спортивная кофта... </p>
+                  <p class="product-price"><span>5 090 ₽</span> <s>7 990 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+
+            <article class="product-card product-card--hoodie-featured" data-category="hoodie" data-product-id="barca-bordeaux">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-08_21-24-38-e1b935f4-01fb-498c-a73a-d2ea1cbc1de3.png"
+                    alt="Бордовая куртка FC Barcelona Nike"
+                  />
+                  <span class="product-badge product-badge--empty"></span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ХУДИ</p>
+                  <h3 class="product-title">ZIP JACKET “BARCA” BORDEAUX</h3>
+                  <p class="product-desc">спортивная кофта... </p>
+                  <p class="product-price"><span>5 090 ₽</span> <s>7 990 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+
+            <article class="product-card product-card--hoodie-featured" data-category="hoodie" data-product-id="real-blue">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-08_21-24-42-a0e7e20f-536e-4a68-864b-d4ba0186667c.png"
+                    alt="Белое худи"
+                  />
+                  <span class="product-badge product-badge--empty"></span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ХУДИ</p>
+                  <h3 class="product-title">ZIP JACKET “REAL” BLUE</h3>
+                  <p class="product-desc">спортивная кофта... </p>
+                  <p class="product-price"><span>5 090 ₽</span> <s>7 990 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+
+            <article class="product-card product-card--featured" data-category="tee" data-product-id="tee-barca">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-09_13-58-09-60c1492f-9428-4f54-b47f-7ea217c83894.png"
+                    alt="Футболка BARCA CLASSIC POLO"
+                  />
+                  <span class="product-badge">NEW</span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ФУТБОЛКА</p>
+                  <h3 class="product-title">Футболка BARCA CLASSIC POLO</h3>
+                  <p class="product-desc">винтажное polo...</p>
+                  <p class="product-price"><span>3 100 ₽</span> <s>4 090 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+
+            <article class="product-card product-card--featured" data-category="tee" data-product-id="tee-real">
+              <a class="product-link" href="#">
+                <div class="product-media">
+                  <img
+                    src="/assets/c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_73735b8900f2d3f26b177be60bb74018_images_photo_2026-04-09_14-00-25-fe701520-ac18-4e7b-b2ea-a274f6469e88.png"
+                    alt="Футболка Real"
+                  />
+                  <span class="product-badge">NEW</span>
+                </div>
+                <div class="product-info">
+                  <p class="product-category">ФУТБОЛКА</p>
+                  <h3 class="product-title">JERSEY “MADRID” WHITE / GREY</h3>
+                  <p class="product-desc">винтажная джерси..</p>
+                  <p class="product-price"><span>3 100 ₽</span> <s>4 090 ₽</s></p>
+                </div>
+              </a>
+              <div class="product-actions">
+                <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-page is-hidden" id="aboutPage" aria-hidden="true">
+        <div class="container about-page-inner">
+          <div class="about-hero">
+            <p class="about-kicker">О бренде</p>
+            <h1 class="about-title">История Beimans</h1>
+            <p class="about-lead">Beimans начался не с бизнеса — он начался с нас.</p>
+          </div>
+
+          <article class="about-story">
+            <p>
+              Мы два друга, которые с детства были фанатами футбола. Мы росли на игре, на эмоциях стадионов, на
+              форме любимых клубов. Футбол всегда был частью нашей жизни — мы не просто смотрели, мы играли, жили
+              этим и чувствовали этот вайб каждый день.
+            </p>
+            <p>
+              Со временем мы заметили одну вещь: футбольная форма — это стиль, энергия, характер. Но в повседневной
+              жизни её почти невозможно было носить. Она создавалась только для поля или тренировок, а не для города,
+              не для обычной жизни.
+            </p>
+            <p><strong>Нам этого не хватало.</strong></p>
+            <p>
+              Мы хотели объединить две вещи: любовь к футболу и повседневный стиль. Создать одежду, которая передаёт
+              тот самый футбольный вайб, но при этом остаётся удобной, лёгкой и уместной в любой ситуации — будь то
+              прогулка, встреча или обычный день.
+            </p>
+            <p><strong>Так появился Beimans.</strong></p>
+            <p>
+              Мы начали с нуля: без больших ресурсов, без опыта, но с чётким ощущением, каким должен быть продукт.
+              Было много проб, ошибок и экспериментов. Мы искали формы, тестировали модели, снимали контент и
+              постепенно находили то, что откликается людям так же, как когда-то откликнулось нам.
+            </p>
+            <p>
+              Каждая вещь — это не просто одежда. Мы дорабатываем детали, ткань, посадку, чтобы она ощущалась
+              правильно. Чтобы её хотелось носить каждый день. Чтобы она давала тот самый баланс между стилем,
+              комфортом и характером.
+            </p>
+            <p>
+              Сегодня Beimans — это больше, чем просто проект. Это путь, который мы продолжаем строить. Мы создаём
+              собственные дизайны, развиваем продукт и стремимся к тому, чтобы собрать в одном месте всё, что мы сами
+              когда-то искали: футбол, стиль и свободу самовыражения.
+            </p>
+            <p>Мы всё ещё в процессе. Мы растём, дорабатываем и идём дальше.</p>
+            <blockquote class="about-quote">
+              Beimans — это не про идеальный результат.<br />
+              Это про путь, энергию и движение вперёд.
+            </blockquote>
+          </article>
+        </div>
+      </section>
+
+      <section class="contacts-page is-hidden" id="contactsPage" aria-hidden="true">
+        <div class="container contacts-page-inner">
+          <div class="contacts-hero">
+            <p class="contacts-kicker">Связаться с нами</p>
+            <h1 class="contacts-title">Контакты Beimans</h1>
+            <p class="contacts-lead">Мы всегда на связи: напишите в Telegram, позвоните или приезжайте по адресу.</p>
+          </div>
+
+          <div class="contacts-grid">
+            <article class="contact-card">
+              <h2>Telegram</h2>
+              <p>Быстрый способ написать в поддержку и получить ответ.</p>
+              <a
+                href="https://t.me/beimanns"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="contact-telegram-link"
+                aria-label="Telegram"
+              >
+                <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0h-.056Zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635Z"
+                  />
+                </svg>
+              </a>
+            </article>
+
+            <article class="contact-card">
+              <h2>Телефон</h2>
+              <p>Для консультации по заказам и вопросам по наличию.</p>
+              <a href="tel:+996501222606">+996 501 222606</a>
+            </article>
+
+            <article class="contact-card">
+              <h2>Адрес</h2>
+              <p>Точка самовывоза и встреч по договорённости.</p>
+              <span>Бишкек</span>
+            </article>
+
+            <article class="contact-card">
+              <h2>Email</h2>
+              <p>Для партнёрств, предложений и обратной связи.</p>
+              <a href="mailto:beimansswear@gmail.com">beimansswear@gmail.com</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="cart-page is-hidden" id="cartPage" aria-hidden="true">
+        <div class="container cart-page-inner">
+          <button type="button" class="product-back" id="cartBackBtn" aria-label="Назад в каталог">
+            ← Каталог
+          </button>
+
+          <div class="cart-hero">
+            <h1 class="cart-title">КОРЗИНА</h1>
+            <p class="cart-subtitle" id="cartSubtitle">0 товаров на сумму 0 ₽</p>
+          </div>
+
+          <div class="cart-empty" id="cartEmptyState">
+            <div class="cart-empty-icon" aria-hidden="true">🛒</div>
+            <h2 class="cart-empty-title">Ваша корзина пуста</h2>
+            <p class="cart-empty-text">Добавьте товары из каталога, чтобы продолжить покупки.</p>
+            <button type="button" class="btn-preorder-primary cart-empty-btn" id="cartGoCatalogBtn">
+              ПЕРЕЙТИ В КАТАЛОГ
+            </button>
+          </div>
+
+          <div class="cart-layout is-hidden" id="cartLayout">
+            <div class="cart-items" id="cartItems" aria-live="polite"></div>
+
+            <aside class="cart-summary">
+              <h2 class="cart-summary-title">ИТОГО</h2>
+              <div class="cart-summary-row">
+                <span>Товаров</span>
+                <strong id="cartTotalItems">0</strong>
+              </div>
+              <div class="cart-summary-row">
+                <span>Сумма</span>
+                <strong id="cartTotalPrice">0 ₽</strong>
+              </div>
+              <button type="button" class="btn-preorder-primary cart-checkout-btn" id="cartCheckoutBtn">
+                ОФОРМИТЬ ЗАКАЗ
+              </button>
+              <p class="cart-summary-note">
+                Нажимая кнопку, вы соглашаетесь с условиями покупки и политикой конфиденциальности
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-page is-hidden" id="checkoutPage" aria-hidden="true">
+        <div class="container checkout-page-inner">
+          <button type="button" class="product-back" id="checkoutBackBtn" aria-label="Назад в корзину">
+            ← Корзина
+          </button>
+
+          <div class="checkout-hero">
+            <h1 class="checkout-title">ОФОРМЛЕНИЕ ЗАКАЗА</h1>
+            <p class="checkout-subtitle">Заполните данные для доставки. Мы свяжемся с вами для подтверждения.</p>
+          </div>
+
+          <div class="checkout-layout">
+            <form class="checkout-form" id="checkoutForm">
+              <label class="checkout-field">
+                <span>Имя</span>
+                <input type="text" id="checkoutName" name="name" required placeholder="Введите ваше имя" />
+                <small class="checkout-hint">Как к вам обращаться</small>
+              </label>
+
+              <label class="checkout-field">
+                <span>Телефон</span>
+                <input
+                  type="tel"
+                  id="checkoutPhone"
+                  name="phone"
+                  required
+                  placeholder="+7 (999) 123-45-67"
+                  inputmode="tel"
+                  maxlength="18"
+                  pattern="^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$"
+                  title="Введите номер в формате +7 (999) 123-45-67"
+                />
+                <small class="checkout-hint">Введите номер в формате РФ: +7 (999) 123-45-67</small>
+              </label>
+
+              <label class="checkout-field">
+                <span>Почта</span>
+                <input type="email" id="checkoutEmail" name="email" required placeholder="you@example.com" />
+                <small class="checkout-hint">Получение уведомлений о заказе</small>
+              </label>
+
+              <label class="checkout-field">
+                <span>Город доставки</span>
+                <div class="checkout-city-field">
+                  <input type="text" id="checkoutCity" name="city" required placeholder="Введите название города" autocomplete="off" />
+                  <div class="checkout-city-suggest is-hidden" id="checkoutCitySuggest"></div>
+                </div>
+                <small class="checkout-hint">Начните вводить город, выберите вариант из подсказок СДЭК</small>
+              </label>
+
+              <div class="checkout-delivery-box">
+                <p class="checkout-delivery-label">Тип доставки *</p>
+                <p class="checkout-delivery-main">Пункт выдачи СДЭК</p>
+                <p class="checkout-delivery-sub">Заберите заказ в удобном пункте выдачи в вашем городе</p>
+              </div>
+
+              <section class="checkout-pickup-section is-hidden" id="checkoutPickupSection">
+                <p class="checkout-pickup-title">Пункт выдачи *</p>
+                <input type="hidden" id="checkoutPickupPoint" name="pickupPoint" />
+                <p class="checkout-pickup-selected is-hidden" id="checkoutPickupSelected"></p>
+                <input
+                  type="text"
+                  id="checkoutPickupSearch"
+                  placeholder="Поиск по адресу или названию..."
+                  disabled
+                />
+                <div class="checkout-pickup-list" id="checkoutPickupList"></div>
+                <small class="checkout-hint" id="checkoutPickupHint">Пункты выдачи подгружаются автоматически по городу</small>
+              </section>
+
+              <label class="checkout-field">
+                <span>Комментарии к заказу</span>
+                <textarea id="checkoutComment" name="comment" rows="4" placeholder="Пожелания по времени доставки, детали заказа и т.д."></textarea>
+              </label>
+
+            </form>
+
+            <aside class="checkout-order">
+              <h2 class="checkout-order-title">СОСТАВ ЗАКАЗА</h2>
+              <div class="checkout-order-list" id="checkoutOrderList"></div>
+              <div class="checkout-order-totals">
+                <div class="checkout-order-total-row">
+                  <span>Товаров:</span>
+                  <strong id="checkoutOrderItems">0 шт</strong>
+                </div>
+                <div class="checkout-order-total-row">
+                  <span>Сумма:</span>
+                  <strong id="checkoutOrderSum">0 ₽</strong>
+                </div>
+                <div class="checkout-order-total-row">
+                  <span>Доставка:</span>
+                  <strong id="checkoutOrderDelivery">—</strong>
+                </div>
+                <div class="checkout-order-delivery-details is-hidden" id="checkoutOrderDeliveryDetails" aria-live="polite"></div>
+                <div class="checkout-order-pay-row">
+                  <span>К оплате:</span>
+                  <strong id="checkoutOrderTotal">0 ₽</strong>
+                </div>
+                <button
+                  type="submit"
+                  id="checkoutSubmitBtn"
+                  form="checkoutForm"
+                  class="btn-preorder-primary checkout-submit-btn"
+                >
+                  ОФОРМИТЬ ЗАКАЗ
+                </button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div class="add-cart-modal is-hidden" id="addCartModal" role="dialog" aria-modal="true" aria-labelledby="addCartTitle" aria-hidden="true">
+        <button type="button" class="add-cart-modal-backdrop" id="addCartBackdrop" aria-label="Закрыть"></button>
+        <div class="add-cart-modal-card">
+          <div class="add-cart-modal-head">
+            <h2 class="add-cart-modal-title" id="addCartTitle">ВЫБЕРИТЕ РАЗМЕР</h2>
+            <button type="button" class="add-cart-modal-close" id="addCartClose" aria-label="Закрыть">×</button>
+          </div>
+
+          <div class="add-cart-product">
+            <div class="add-cart-product-media">
+              <img id="addCartProductImg" src="" alt="" width="160" height="190" />
+            </div>
+            <div class="add-cart-product-body">
+              <p class="add-cart-product-title" id="addCartProductTitle"></p>
+              <p class="add-cart-product-price" id="addCartProductPrice"></p>
+            </div>
+          </div>
+
+          <div class="add-cart-size-grid" id="addCartSizeGrid" role="radiogroup" aria-label="Выберите размер"></div>
+
+          <div class="add-cart-actions">
+            <button type="button" class="add-cart-cancel-btn" id="addCartCancelBtn">ОТМЕНА</button>
+            <button type="button" class="add-cart-confirm-btn" id="addCartConfirmBtn" disabled>
+              ВЫБЕРИТЕ РАЗМЕР
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-col footer-col--brand">
+          <a href="#catalog" class="footer-brand">
+            <span class="footer-brand-text">BEIMAN</span>
+          </a>
+          <div class="footer-socials">
+            <a
+              href="https://t.me/beimanns"
+              class="footer-social"
+              aria-label="Telegram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="footer-social-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
+                />
+              </svg>
+            </a>
+            <a
+              href="https://www.instagram.com/beimanss/"
+              class="footer-social"
+              aria-label="Instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="footer-social-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <rect
+                  x="2"
+                  y="2"
+                  width="20"
+                  height="20"
+                  rx="5"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                />
+                <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.75" />
+                <circle cx="17.5" cy="6.5" r="1.25" fill="currentColor" />
+              </svg>
+            </a>
+            <a
+              href="https://www.tiktok.com/@beimanss"
+              class="footer-social"
+              aria-label="TikTok"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="footer-social-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12.525.02c1.31-.02 2.61-.01 3.919.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.01-1-.01-1.49.18-1.92 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48.04 2.96.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h2 class="footer-heading">Поддержка</h2>
+          <ul class="footer-list">
+            <li><a href="#about" data-footer-view="about">О компании</a></li>
+            <li><a href="#contacts" data-footer-view="contacts">Контакты</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h2 class="footer-heading">Быстрая навигация</h2>
+          <ul class="footer-list">
+            <li>
+              <a href="#catalog" data-footer-category="all">Каталог</a>
+            </li>
+            <li>
+              <a href="#catalog" data-footer-category="hoodie">Худи</a>
+            </li>
+            <li>
+              <a href="#catalog" data-footer-category="tee">Футболки</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h2 class="footer-heading">Контакты</h2>
+          <p class="footer-support">
+            <a
+              href="https://t.me/beimanns"
+              class="footer-support-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Написать в поддержку</a>
+          </p>
+          <ul class="footer-contacts">
+            <li>
+              <svg class="footer-icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  d="M6.5 4h3l1.5 4.5L9 10.5a12 12 0 0 0 4.5 4.5l2-2 4.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5 18 18 0 0 1-8-2.2 18 18 0 0 1-5.3-5.3A18 18 0 0 1 5 5.6 1.5 1.5 0 0 1 6.5 4Z"
+                />
+              </svg>
+              <a href="tel:+996501222606">+996 501 222606</a>
+            </li>
+            <li>
+              <svg class="footer-icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  d="M4 6h16v12H4z M4 7l8 5 8-5"
+                />
+              </svg>
+              <a href="mailto:beimansswear@gmail.com">beimansswear@gmail.com</a>
+            </li>
+            <li>
+              <svg class="footer-icon-svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linejoin="round"
+                  d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z M12 11.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+                />
+              </svg>
+              <span>Бишкек</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bar">
+        <div class="container footer-bar-inner">
+          <p class="footer-copy">© 2026 BEIMAN. Все права защищены.</p>
+        </div>
+      </div>
+    </footer>
+    </div>
+    <div class="cart-toast is-hidden" id="cartToast" role="status" aria-live="polite">
+      Товар добавлен в корзину
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
