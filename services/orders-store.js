@@ -32,7 +32,35 @@ async function appendOrder(order) {
   return order;
 }
 
+async function updateOrderStatus(orderId, status) {
+  const normalizedId = String(orderId || "").trim();
+  const normalizedStatus = String(status || "").trim().toUpperCase();
+  if (!normalizedId) throw new Error("Order id is required");
+  if (!normalizedStatus) throw new Error("Order status is required");
+
+  const orders = await readOrders();
+  const index = orders.findIndex((order) => String(order?.id || "") === normalizedId);
+  if (index < 0) {
+    throw new Error(`Order "${normalizedId}" not found`);
+  }
+
+  const existing = orders[index] || {};
+  const nextOrder = {
+    ...existing,
+    updatedAt: new Date().toISOString(),
+    cdek: {
+      ...(existing.cdek || {}),
+      status: normalizedStatus,
+    },
+  };
+  const nextOrders = [...orders];
+  nextOrders[index] = nextOrder;
+  await writeOrders(nextOrders);
+  return nextOrder;
+}
+
 module.exports = {
   appendOrder,
   readOrders,
+  updateOrderStatus,
 };

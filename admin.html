@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BEIMAN Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="admin-auth-screen" id="authScreen">
+      <form class="admin-auth-card" id="loginForm" autocomplete="off">
+        <p class="admin-auth-kicker">BEIMAN secure access</p>
+        <h1>Вход в админ-панель</h1>
+        <label>
+          <span>Логин</span>
+          <input type="text" id="loginUsername" name="username" placeholder="admin" required />
+        </label>
+        <label>
+          <span>Пароль</span>
+          <input type="password" id="loginPassword" name="password" placeholder="••••••••" required />
+        </label>
+        <p class="admin-auth-error is-hidden" id="loginError"></p>
+        <button type="submit" class="admin-btn">Войти</button>
+      </form>
+    </div>
+
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a href="/" class="admin-brand">BEIMAN <span>admin</span></a>
+        <nav class="admin-nav" aria-label="Админ меню">
+          <button class="admin-nav-link is-active" data-section-target="dashboard">Дашборд</button>
+          <button class="admin-nav-link" data-section-target="orders">Заказы</button>
+          <button class="admin-nav-link" data-section-target="catalog">Каталог</button>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-topbar">
+          <div>
+            <p class="admin-topbar-kicker">Панель управления</p>
+            <h1 class="admin-topbar-title">BEIMAN Control Center</h1>
+          </div>
+          <div class="admin-topbar-actions">
+            <button class="admin-btn admin-btn--ghost" id="refreshBtn">Обновить</button>
+            <a class="admin-btn" href="/" target="_blank" rel="noopener noreferrer">Открыть сайт</a>
+            <button class="admin-btn admin-btn--ghost" id="logoutBtn">Выйти</button>
+          </div>
+        </header>
+
+        <section class="admin-section" data-section="dashboard">
+          <div class="stats-grid" id="statsGrid">
+            <article class="stat-card">
+              <p>Всего заказов</p>
+              <h2 id="statTotalOrders">0</h2>
+              <span>За все время</span>
+            </article>
+            <article class="stat-card">
+              <p>Заказы за 7 дней</p>
+              <h2 id="statWeekOrders">0</h2>
+              <span>Последняя неделя</span>
+            </article>
+            <article class="stat-card">
+              <p>Уникальных городов</p>
+              <h2 id="statCities">0</h2>
+              <span>География доставки</span>
+            </article>
+            <article class="stat-card">
+              <p>Последний заказ</p>
+              <h2 id="statLastOrder">—</h2>
+              <span id="statLastOrderSub">Нет данных</span>
+            </article>
+          </div>
+
+          <div class="panel-grid">
+            <article class="panel-card">
+              <div class="panel-head">
+                <h3>Активность заказов (7 дней)</h3>
+              </div>
+              <div class="mini-chart" id="miniChart"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-head">
+                <h3>Топ городов</h3>
+              </div>
+              <ul class="city-list" id="cityList"></ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-section is-hidden" data-section="orders">
+          <article class="panel-card">
+            <div class="panel-head panel-head--split">
+              <h3>Список заказов</h3>
+              <input class="admin-search" id="ordersSearch" type="search" placeholder="Поиск: имя, телефон, город..." />
+            </div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Клиент</th>
+                    <th>Контакты</th>
+                    <th>Город</th>
+                    <th>Статус</th>
+                    <th>Управление</th>
+                    <th>Дата</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="admin-section is-hidden" data-section="catalog">
+          <article class="panel-card">
+            <div class="product-builder is-hidden" id="productBuilder">
+              <div class="product-builder-head">
+                <h4 id="productBuilderTitle">Новый товар</h4>
+                <button class="admin-btn admin-btn--ghost" id="closeProductBuilderBtn" type="button">Закрыть</button>
+              </div>
+
+              <div class="product-builder-grid">
+                <form class="product-form" id="productForm">
+                  <input type="hidden" id="productEditId" />
+                  <label>
+                    <span>Название</span>
+                    <input id="productTitle" placeholder="Название товара" required />
+                  </label>
+                  <label>
+                    <span>Категория</span>
+                    <select id="productCategory">
+                      <option value="hoodie">Худи</option>
+                      <option value="tee">Футболка</option>
+                      <option value="other">Другое</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Цена</span>
+                    <input id="productPrice" type="number" min="1" step="1" required />
+                  </label>
+                  <label>
+                    <span>Старая цена</span>
+                    <input id="productOldPrice" type="number" min="0" step="1" />
+                  </label>
+                  <label>
+                    <span>Бейдж</span>
+                    <input id="productBadge" placeholder="NEW / HIT" />
+                  </label>
+                  <div class="product-form-wide">
+                    <span>Фото товара</span>
+                    <label class="product-upload-control" for="productImageFile">
+                      <input id="productImageFile" class="product-upload-input" type="file" accept="image/*" />
+                      <span class="product-upload-btn">Выбрать фото</span>
+                      <span class="product-upload-name" id="productImageFileName">Файл не выбран</span>
+                    </label>
+                    <img class="product-upload-thumb is-hidden" id="productImageThumb" alt="Превью выбранного фото" />
+                    <small class="product-upload-hint">ПК: выбор с диска, телефон: выбор из галереи</small>
+                  </div>
+                  <label class="product-form-wide">
+                    <span>Подробное описание</span>
+                    <textarea
+                      id="productLeadDescription"
+                      rows="5"
+                      placeholder="Текст для страницы товара (после цены)"
+                    ></textarea>
+                  </label>
+                  <label class="product-form-wide">
+                    <span>Характеристики (каждая строка: Ключ | Значение)</span>
+                    <textarea
+                      id="productSpecs"
+                      rows="6"
+                      placeholder="Материал | Хлопок 100%&#10;Посадка | Свободная&#10;Уход | Стирка 30°C"
+                    ></textarea>
+                  </label>
+                  <div class="product-form-wide">
+                    <span class="product-size-label">Размеры</span>
+                    <div class="product-size-picker" id="productSizesPicker" role="group" aria-label="Выбор размеров">
+                      <button type="button" class="product-size-btn" data-size-option="XS">XS</button>
+                      <button type="button" class="product-size-btn" data-size-option="S">S</button>
+                      <button type="button" class="product-size-btn" data-size-option="M">M</button>
+                      <button type="button" class="product-size-btn" data-size-option="L">L</button>
+                      <button type="button" class="product-size-btn" data-size-option="XL">XL</button>
+                      <button type="button" class="product-size-btn" data-size-option="2XL">2XL</button>
+                    </div>
+                    <p class="product-size-selected" id="productSizesSelected">Выбрано: —</p>
+                  </div>
+                  <div class="product-form-actions">
+                    <button class="admin-btn" id="saveProductBtn" type="submit">Сохранить</button>
+                  </div>
+                </form>
+
+                <div class="product-preview-wrap">
+                  <p class="product-preview-title">Макет карточки товара (как на сайте)</p>
+                  <article class="product-detail-preview" id="catalogPreviewCard">
+                    <div class="product-detail-preview-media">
+                      <img id="previewImage" src="/assets/real-white.png" alt="Preview" />
+                      <span class="product-detail-preview-badge" id="previewBadge">NEW</span>
+                    </div>
+                    <div class="product-detail-preview-body">
+                      <p class="product-detail-preview-category" id="previewCategory">ХУДИ</p>
+                      <h5 class="product-detail-preview-name" id="previewTitle">Название товара</h5>
+                      <p class="product-detail-preview-price" id="previewPrice"><span>0 ₽</span> <s>0 ₽</s></p>
+                      <p class="product-detail-preview-lead" id="previewLead">
+                        Здесь будет длинное описание товара, как на карточке страницы товара.
+                      </p>
+                      <p class="product-detail-preview-subtitle">Характеристики</p>
+                      <ul class="product-detail-preview-specs" id="previewSpecs">
+                        <li><span>Материал</span><span>Хлопок 100%</span></li>
+                        <li><span>Посадка</span><span>Свободная</span></li>
+                      </ul>
+                      <div class="product-detail-preview-note">
+                        <p class="product-detail-preview-note-text">
+                          <strong>Индивидуальный пошив</strong> — модель создаётся под каждый заказ. Сложная
+                          конструкция требует времени, поэтому срок производства и отправки составляет в течение 2–3
+                          недель.
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <p class="product-form-message is-hidden" id="productFormMessage"></p>
+            </div>
+
+            <div class="panel-head panel-head--split panel-head--catalog-actions">
+              <h3>Список товаров</h3>
+              <div class="catalog-list-controls">
+                <button class="admin-btn admin-btn--ghost" id="resetProductFormBtn" type="button">Добавить товар</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Цена</th>
+                    <th>Активен</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="admin-section is-hidden" data-section="settings">
+          <article class="panel-card">
+            <div class="panel-head">
+              <h3>Системные настройки</h3>
+            </div>
+            <ul class="simple-list">
+              <li>Авторизация активна: доступ к API только после входа.</li>
+              <li>Логин/пароль задаются в `.env` через `ADMIN_USERNAME` и `ADMIN_PASSWORD`.</li>
+              <li>Управление товарами и статусами заказов уже работает в этой панели.</li>
+            </ul>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <div class="admin-mobile-actions" aria-label="Быстрые действия">
+      <button type="button" class="admin-mobile-action" id="mobileRefreshBtn">Обновить</button>
+      <button type="button" class="admin-mobile-action admin-mobile-action--accent" id="mobileNewProductBtn">
+        Новый товар
+      </button>
+    </div>
+
+    <script src="admin.js?v=20260425-1"></script>
+  </body>
+</html>

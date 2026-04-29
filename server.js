@@ -1,10 +1,17 @@
 const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
+const crypto = require("crypto");
+const fs = require("fs");
+const fsPromises = require("fs/promises");
+const multer = require("multer");
+const heicConvert = require("heic-convert");
 
 dotenv.config();
 const cdekService = require("./services/cdek");
 const ordersStore = require("./services/orders-store");
+const productsStore = require("./services/products-store");
+const adminAuth = require("./services/admin-auth");
 
 const app = express();
 app.use(express.json());
@@ -21,11 +28,137 @@ const CDEK_PACKAGE_LENGTH_CM = Number(process.env.CDEK_PACKAGE_LENGTH_CM || 30);
 const CDEK_PACKAGE_WIDTH_CM = Number(process.env.CDEK_PACKAGE_WIDTH_CM || 20);
 const CDEK_PACKAGE_HEIGHT_CM = Number(process.env.CDEK_PACKAGE_HEIGHT_CM || 8);
 const EXTRA_ASSETS_DIR = process.env.EXTRA_ASSETS_DIR || "";
+const UPLOADS_DIR = path.resolve(__dirname, "assets", "uploads");
+const ADMIN_STATUSES = [
+  "CREATED",
+  "PROCESSING",
+  "READY_TO_SHIP",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+  "SUCCESSFUL",
+  "FAILED",
+];
 
 const CDEK_API_BASE_CANDIDATES = Array.from(
   new Set([CDEK_API_BASE, "https://api.edu.cdek.ru/v2"].filter(Boolean))
 );
 const authCacheByBase = new Map();
+
+const IMAGE_EXTENSION_BY_MIME = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "image/avif": ".avif",
+  "image/heic": ".heic",
+  "image/heif": ".heif",
+  "image/heic-sequence": ".heic",
+  "image/heif-sequence": ".heif",
+};
+const ALLOWED_UPLOAD_MIME_TYPES = new Set(Object.keys(IMAGE_EXTENSION_BY_MIME));
+const HEIC_MIME_TYPES = new Set(["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]);
+
+const productImageUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      try {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+        cb(null, UPLOADS_DIR);
+      } catch (error) {
+        cb(error);
+      }
+    },
+    filename: (_req, file, cb) => {
+      const safeOriginalExt = String(path.extname(file.originalname || ""))
+        .toLowerCase()
+        .replace(/[^.a-z0-9]/g, "");
+      const ext = safeOriginalExt || IMAGE_EXTENSION_BY_MIME[file.mimetype] || ".jpg";
+      cb(null, `${Date.now()}-${crypto.randomUUID()}${ext}`);
+    },
+  }),
+  limits: {
+    fileSize: 8 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_UPLOAD_MIME_TYPES.has(String(file.mimetype || "").toLowerCase())) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Поддерживаются JPG, PNG, WEBP, GIF, AVIF, HEIC, HEIF"));
+  },
+});
+
+async function normalizeUploadedImage(file) {
+  if (!file) throw new Error("Файл не найден");
+  const mimeType = String(file.mimetype || "").toLowerCase();
+  const sourcePath = String(file.path || "");
+  if (!sourcePath) throw new Error("Не удалось прочитать путь загруженного файла");
+
+  const fileExt = String(path.extname(file.originalname || file.filename || ""))
+    .trim()
+    .toLowerCase();
+  const isHeicLike = HEIC_MIME_TYPES.has(mimeType) || fileExt === ".heic" || fileExt === ".heif";
+
+  if (!isHeicLike) {
+    return `/assets/uploads/${file.filename}`;
+  }
+
+  const inputBuffer = await fsPromises.readFile(sourcePath);
+  const convertedBuffer = await heicConvert({
+    buffer: inputBuffer,
+    format: "JPEG",
+    quality: 0.9,
+  });
+
+  const parsed = path.parse(file.filename);
+  const convertedFilename = `${parsed.name}.jpg`;
+  const convertedPath = path.resolve(UPLOADS_DIR, convertedFilename);
+
+  await fsPromises.writeFile(convertedPath, convertedBuffer);
+  await fsPromises.unlink(sourcePath).catch(() => {});
+
+  return `/assets/uploads/${convertedFilename}`;
+}
+
+function parseCookies(req) {
+  const raw = String(req.headers?.cookie || "");
+  if (!raw) return {};
+  return raw.split(";").reduce((acc, pair) => {
+    const index = pair.indexOf("=");
+    if (index <= 0) return acc;
+    const key = pair.slice(0, index).trim();
+    const value = decodeURIComponent(pair.slice(index + 1).trim());
+    if (key) acc[key] = value;
+    return acc;
+  }, {});
+}
+
+function setCookie(res, name, value, options = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`];
+  parts.push(`Path=${options.path || "/"}`);
+  if (typeof options.maxAge === "number") parts.push(`Max-Age=${Math.max(0, Math.floor(options.maxAge))}`);
+  if (options.httpOnly) parts.push("HttpOnly");
+  if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
+  if (options.secure) parts.push("Secure");
+  res.setHeader("Set-Cookie", parts.join("; "));
+}
+
+function clearCookie(res, name) {
+  setCookie(res, name, "", { path: "/", maxAge: 0, sameSite: "Lax", httpOnly: true });
+}
+
+function requireAdminAuth(req, res, next) {
+  const cookies = parseCookies(req);
+  const token = cookies[adminAuth.COOKIE_NAME];
+  const session = adminAuth.getSession(token);
+  if (!session) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  req.adminSession = session;
+  req.adminToken = token;
+  return next();
+}
 
 function buildCdekUrl(relativePath) {
   return `${CDEK_API_BASE.replace(/\/+$/, "")}${relativePath}`;
@@ -404,16 +537,181 @@ app.get("/api/orders", async (_, res) => {
   }
 });
 
+app.get("/api/products", async (_, res) => {
+  try {
+    const products = await productsStore.readProducts();
+    return res.json({
+      ok: true,
+      total: products.filter((item) => item.isActive).length,
+      products: products.filter((item) => item.isActive),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error?.message || "Failed to load products",
+    });
+  }
+});
+
+app.get("/api/admin/session", requireAdminAuth, (req, res) => {
+  return res.json({
+    ok: true,
+    username: req.adminSession?.username || "admin",
+  });
+});
+
+app.post("/api/admin/login", (req, res) => {
+  const username = String(req.body?.username || "").trim();
+  const password = String(req.body?.password || "");
+  if (!adminAuth.isValidCredentials(username, password)) {
+    return res.status(401).json({ error: "Invalid login or password" });
+  }
+
+  const session = adminAuth.createSession(username);
+  setCookie(res, adminAuth.COOKIE_NAME, session.token, {
+    path: "/",
+    maxAge: Math.floor(adminAuth.SESSION_TTL_MS / 1000),
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+  return res.json({ ok: true, username });
+});
+
+app.post("/api/admin/logout", requireAdminAuth, (req, res) => {
+  adminAuth.clearSession(req.adminToken);
+  clearCookie(res, adminAuth.COOKIE_NAME);
+  return res.json({ ok: true });
+});
+
+app.get("/api/admin/orders", requireAdminAuth, async (_, res) => {
+  try {
+    const orders = await ordersStore.readOrders();
+    return res.json({
+      ok: true,
+      statuses: ADMIN_STATUSES,
+      total: orders.length,
+      orders,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error?.message || "Failed to load saved orders",
+    });
+  }
+});
+
+app.patch("/api/admin/orders/:orderId/status", requireAdminAuth, async (req, res) => {
+  try {
+    const orderId = String(req.params?.orderId || "").trim();
+    const status = String(req.body?.status || "").trim().toUpperCase();
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    const order = await ordersStore.updateOrderStatus(orderId, status);
+    return res.json({ ok: true, order });
+  } catch (error) {
+    const message = error?.message || "Failed to update order status";
+    const statusCode = /not found/i.test(message) ? 404 : 500;
+    return res.status(statusCode).json({ error: message });
+  }
+});
+
+app.get("/api/admin/products", requireAdminAuth, async (_, res) => {
+  try {
+    const products = await productsStore.readProducts();
+    return res.json({
+      ok: true,
+      total: products.length,
+      products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error?.message || "Failed to load products",
+    });
+  }
+});
+
+app.post("/api/admin/products", requireAdminAuth, async (req, res) => {
+  try {
+    const product = await productsStore.createProduct(req.body || {});
+    return res.status(201).json({ ok: true, product });
+  } catch (error) {
+    const message = error?.message || "Failed to create product";
+    const statusCode = /already exists|required|must be/i.test(message) ? 400 : 500;
+    return res.status(statusCode).json({ error: message });
+  }
+});
+
+app.put("/api/admin/products/:productId", requireAdminAuth, async (req, res) => {
+  try {
+    const productId = String(req.params?.productId || "").trim();
+    const product = await productsStore.updateProduct(productId, req.body || {});
+    return res.json({ ok: true, product });
+  } catch (error) {
+    const message = error?.message || "Failed to update product";
+    const statusCode = /not found/i.test(message) ? 404 : /already exists|required|must be/i.test(message) ? 400 : 500;
+    return res.status(statusCode).json({ error: message });
+  }
+});
+
+app.delete("/api/admin/products/:productId", requireAdminAuth, async (req, res) => {
+  try {
+    const productId = String(req.params?.productId || "").trim();
+    await productsStore.deleteProduct(productId);
+    return res.json({ ok: true });
+  } catch (error) {
+    const message = error?.message || "Failed to delete product";
+    const statusCode = /not found/i.test(message) ? 404 : 500;
+    return res.status(statusCode).json({ error: message });
+  }
+});
+
+app.post("/api/admin/upload-image", requireAdminAuth, (req, res) => {
+  productImageUpload.single("image")(req, res, (error) => {
+    const fail = async (message) => {
+      if (req.file?.path) {
+        await fsPromises.unlink(req.file.path).catch(() => {});
+      }
+      return res.status(400).json({ error: message });
+    };
+    if (error) {
+      const message =
+        error?.code === "LIMIT_FILE_SIZE"
+          ? "Файл слишком большой (максимум 8 МБ)"
+          : error?.message || "Не удалось загрузить файл";
+      return fail(message);
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "Файл не выбран" });
+    }
+    return (async () => {
+      try {
+        const imageUrl = await normalizeUploadedImage(req.file);
+        return res.status(201).json({ ok: true, imageUrl });
+      } catch {
+        return fail("Не удалось обработать изображение. Попробуйте JPG/PNG.");
+      }
+    })();
+  });
+});
+
 app.use("/assets", express.static(path.resolve(__dirname, "assets")));
 if (EXTRA_ASSETS_DIR) {
   app.use("/assets", express.static(path.resolve(EXTRA_ASSETS_DIR)));
 }
 app.use(express.static(path.resolve(__dirname)));
 
+app.get("/admin", (_, res) => {
+  res.sendFile(path.resolve(__dirname, "admin.html"));
+});
+
 app.get("*", (_, res) => {
   res.sendFile(path.resolve(__dirname, "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`BEIMAN server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`BEIMAN server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { app };

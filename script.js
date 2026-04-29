@@ -274,12 +274,17 @@ sortSelect?.addEventListener("change", () => {
   animateCatalogInteraction();
 });
 
-initProductOrder();
-applyCategoryFilter();
-if (sortSelect?.value) {
-  sortProductGrid(sortSelect.value);
+async function bootstrapCatalog() {
+  await syncCatalogWithApiProducts();
+  initProductOrder();
+  applyCategoryFilter();
+  if (sortSelect?.value) {
+    sortProductGrid(sortSelect.value);
+  }
+  setupRevealAnimations();
 }
-setupRevealAnimations();
+
+bootstrapCatalog();
 
 /* ---------- Страница товара: данные, #p=id, предзаказ, модалка ---------- */
 
@@ -336,6 +341,7 @@ const sizeChartClose = document.getElementById("sizeChartClose");
 const sizeChartBody = document.getElementById("sizeChartBody");
 const sizeChartContext = document.getElementById("sizeChartContext");
 const productPreorderBtn = document.getElementById("productPreorderBtn");
+const productPreorderNoteText = document.getElementById("productPreorderNoteText");
 const addCartModal = document.getElementById("addCartModal");
 const addCartBackdrop = document.getElementById("addCartBackdrop");
 const addCartClose = document.getElementById("addCartClose");
@@ -377,6 +383,8 @@ const CDEK_CALCULATOR_API_URL = "/api/cdek/calculate";
 const CDEK_CITIES_API_URL = "/api/cdek/cities";
 const CDEK_PICKUP_POINTS_API_URL = "/api/cdek/pickup-points";
 const CDEK_CREATE_ORDER_API_URL = "/api/cdek/create-order";
+const UNIVERSAL_PREORDER_NOTE_HTML =
+  "<strong>Индивидуальный пошив</strong> — модель создаётся под каждый заказ. Сложная конструкция требует времени, поэтому срок производства и отправки составляет в течение 2–3 недель.";
 let cdekQuoteState = {
   status: "idle",
   city: "",
@@ -526,6 +534,130 @@ const PRODUCTS = {
     ],
   },
 };
+
+const STATIC_PRODUCTS = JSON.parse(JSON.stringify(PRODUCTS));
+
+function toDisplayCategory(category) {
+  const normalized = String(category || "").trim().toLowerCase();
+  if (normalized === "hoodie") return "ХУДИ";
+  if (normalized === "tee") return "ФУТБОЛКА";
+  return "ТОВАР";
+}
+
+function toProductDescription(category) {
+  const normalized = String(category || "").trim().toLowerCase();
+  if (normalized === "hoodie") return "спортивная кофта...";
+  if (normalized === "tee") return "винтажная футболка...";
+  return "новая модель...";
+}
+
+function toCardClass(category, badge) {
+  const normalizedCategory = String(category || "").trim().toLowerCase();
+  const normalizedBadge = String(badge || "").trim().toUpperCase();
+  if (normalizedCategory === "hoodie" && normalizedBadge === "HIT") return "product-card product-card--hoodie-featured";
+  if (normalizedCategory === "tee" && normalizedBadge === "NEW") return "product-card product-card--featured";
+  return "product-card";
+}
+
+function normalizeProductFromApi(product) {
+  const id = String(product?.id || "").trim();
+  const category = String(product?.category || "other").trim().toLowerCase();
+  const price = Number(product?.price || 0);
+  const oldPrice = Number(product?.oldPrice || 0);
+  const badge = String(product?.badge || "").trim().toUpperCase();
+  const sizes = Array.isArray(product?.sizes)
+    ? product.sizes
+        .map((size) => String(size || "").trim().toUpperCase())
+        .filter(Boolean)
+    : [];
+  const title = String(product?.title || "").trim();
+  if (!id || !title || !Number.isFinite(price) || price <= 0) return null;
+
+  return {
+    id,
+    title,
+    category,
+    categoryLabel: toDisplayCategory(category),
+    price: formatPrice(price),
+    oldPrice: oldPrice > 0 ? formatPrice(oldPrice) : "",
+    badge,
+    image: String(product?.image || "").trim() || "/assets/placeholder.png",
+    imageAlt: String(product?.imageAlt || "").trim() || title,
+    cardDescription: String(product?.cardDescription || "").trim(),
+    lead: String(product?.lead || "").trim(),
+    specs: Array.isArray(product?.specs) ? product.specs : [],
+    sizes,
+  };
+}
+
+function syncProductsModel(products) {
+  Object.keys(PRODUCTS).forEach((key) => {
+    delete PRODUCTS[key];
+  });
+
+  products.forEach((product) => {
+    const fallback = STATIC_PRODUCTS[product.id] || {};
+    PRODUCTS[product.id] = {
+      title: product.title || fallback.title || "Товар",
+      category: product.categoryLabel || fallback.category || "ТОВАР",
+      price: product.price || fallback.price || "0 ₽",
+      oldPrice: product.oldPrice || fallback.oldPrice || "",
+      badge: product.badge || fallback.badge || "",
+      image: product.image || fallback.image || "",
+      imageAlt: product.imageAlt || fallback.imageAlt || "",
+      cardDescription: product.cardDescription || fallback.cardDescription || "",
+      lead: product.lead || fallback.lead || "",
+      specs: Array.isArray(product.specs) && product.specs.length > 0 ? product.specs : fallback.specs || [],
+      sizes: Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes : fallback.sizes || [],
+    };
+  });
+}
+
+function renderCatalogProducts(products) {
+  if (!productGrid) return;
+  productGrid.innerHTML = products
+    .map((product) => {
+      const badgeClass = product.badge ? "product-badge" : "product-badge product-badge--empty";
+      const oldPriceHtml = product.oldPrice ? `<s>${product.oldPrice}</s>` : "";
+      return `
+        <article class="${toCardClass(product.category, product.badge)}" data-category="${product.category}" data-product-id="${product.id}">
+          <a class="product-link" href="#">
+            <div class="product-media">
+              <img src="${product.image}" alt="${product.imageAlt}" />
+              <span class="${badgeClass}">${product.badge || ""}</span>
+            </div>
+            <div class="product-info">
+              <p class="product-category">${product.categoryLabel}</p>
+              <h3 class="product-title">${product.title}</h3>
+              <p class="product-desc">${product.cardDescription || toProductDescription(product.category)}</p>
+              <p class="product-price"><span>${product.price}</span> ${oldPriceHtml}</p>
+            </div>
+          </a>
+          <div class="product-actions">
+            <button type="button" class="btn btn-card">В КОРЗИНУ</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function syncCatalogWithApiProducts() {
+  if (!productGrid) return;
+  try {
+    const response = await fetch("/api/products");
+    if (!response.ok) return;
+    const data = await response.json();
+    const normalized = (Array.isArray(data?.products) ? data.products : [])
+      .map(normalizeProductFromApi)
+      .filter(Boolean);
+    if (!normalized.length) return;
+    syncProductsModel(normalized);
+    renderCatalogProducts(normalized);
+  } catch {
+    // Keep static HTML as fallback when API is unavailable.
+  }
+}
 
 let selectedSize = null;
 const ALL_SIZES = ["XS", "S", "M", "L", "XL", "2XL"];
@@ -1464,6 +1596,15 @@ function getCaretByDigitCount(formattedValue, digitCount) {
 }
 
 function getAvailableSizes(productId) {
+  const product = PRODUCTS[productId];
+  const customSizes = Array.isArray(product?.sizes)
+    ? product.sizes
+        .map((size) => String(size || "").trim().toUpperCase())
+        .filter(Boolean)
+    : [];
+  if (customSizes.length > 0) {
+    return new Set(customSizes);
+  }
   if (HOODIE_PRODUCT_IDS.has(productId)) {
     return new Set(["L", "XL", "2XL"]);
   }
@@ -1548,6 +1689,9 @@ function renderProductDetail(id) {
   if (!data) return;
   currentProductId = id;
   const isPremiumDetailProduct = PREMIUM_DETAIL_IDS.has(id);
+  if (productPreorderNoteText) {
+    productPreorderNoteText.innerHTML = UNIVERSAL_PREORDER_NOTE_HTML;
+  }
 
   if (productDetailImg) {
     productDetailImg.src = data.image;
@@ -1562,14 +1706,18 @@ function renderProductDetail(id) {
   if (productDetailCategory) productDetailCategory.textContent = data.category;
   if (productDetailTitle) productDetailTitle.textContent = data.title;
   if (productDetailPrice) {
-    productDetailPrice.innerHTML = `<span>${data.price}</span> <s>${data.oldPrice}</s>`;
+    const oldPriceHtml = data.oldPrice ? `<s>${data.oldPrice}</s>` : "";
+    productDetailPrice.innerHTML = `<span>${data.price}</span> ${oldPriceHtml}`;
   }
-  if (productDetailLead) productDetailLead.textContent = data.lead;
+  if (productDetailLead) {
+    productDetailLead.textContent = data.lead || "Описание товара скоро появится в карточке.";
+  }
   productDetailLead?.classList.toggle("is-tee-lead", isPremiumDetailProduct);
   productDetailHeading?.classList.toggle("is-tee-heading", isPremiumDetailProduct);
   if (productDetailSpecs) {
+    const specs = Array.isArray(data.specs) && data.specs.length > 0 ? data.specs : [["Характеристики", "Уточняются"]];
     productDetailSpecs.classList.toggle("is-tee-specs", isPremiumDetailProduct);
-    productDetailSpecs.innerHTML = data.specs
+    productDetailSpecs.innerHTML = specs
       .map(([k, v]) => {
         const key = String(k ?? "").trim();
         const isBullet = key === "—";
