@@ -25,6 +25,8 @@ html,
 body {
   margin: 0;
   padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -37,6 +39,10 @@ body {
     radial-gradient(circle at 12% 8%, #18202a 0%, var(--bg) 55%);
   overflow-x: hidden;
   line-height: 1.45;
+}
+
+.admin-main * {
+  min-width: 0;
 }
 
 .admin-auth-screen {
@@ -506,7 +512,7 @@ body {
 .product-builder-grid {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 16px;
   align-items: start;
 }
@@ -602,6 +608,7 @@ body {
   margin: 0 0 12px;
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 34px;
   font-family: "Inter", Arial, sans-serif;
