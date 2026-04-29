@@ -518,6 +518,9 @@ body {
   background: rgba(11, 15, 20, 0.9);
   position: sticky;
   top: 12px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .product-preview-title {
@@ -528,22 +531,26 @@ body {
 
 .product-detail-preview {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1.05fr);
+  grid-template-columns: 1fr;
   gap: 16px;
   border: 1px solid #333;
   border-radius: 14px;
-  overflow: visible;
+  overflow: hidden;
   background: rgba(8, 10, 14, 0.96);
   padding: 14px;
+  min-width: 0;
 }
 
 .product-detail-preview-media {
   position: relative;
-  aspect-ratio: 0.8 / 1;
+  aspect-ratio: 0.9 / 1;
   background: radial-gradient(circle at 50% 20%, #4c4c4c, #1a1a1a 58%, #111 100%);
   border: 1px solid #2a2a2a;
   border-radius: 10px;
   overflow: hidden;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .product-detail-preview-media img {
@@ -570,7 +577,8 @@ body {
 }
 
 .product-detail-preview-body {
-  padding: 2px 2px 2px 4px;
+  padding: 4px 2px 2px;
+  min-width: 0;
 }
 
 .product-detail-preview-category {
@@ -587,6 +595,7 @@ body {
   line-height: 1.15;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .product-detail-preview-price {
@@ -614,6 +623,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: #cfd9ea;
+  overflow-wrap: anywhere;
 }
 
 .product-detail-preview-subtitle {
@@ -644,6 +654,10 @@ body {
   color: #d6deeb;
 }
 
+.product-detail-preview-specs li span {
+  overflow-wrap: anywhere;
+}
+
 .product-detail-preview-specs li:last-child {
   border-bottom: none;
 }
@@ -665,6 +679,7 @@ body {
   color: #dbe5f3;
   font-size: 13px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .product-detail-preview-note-text strong {
@@ -903,6 +918,21 @@ body {
 
   .product-detail-preview-lead {
     font-size: 15px;
+  }
+}
+
+@media (max-width: 1380px) {
+  .product-builder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-preview-wrap {
+    position: static;
+    top: auto;
+  }
+
+  .product-detail-preview-media {
+    max-width: 420px;
   }
 }
 
