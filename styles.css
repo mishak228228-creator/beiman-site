@@ -210,10 +210,9 @@ a {
 
 .logo-img {
   display: block;
-  width: auto;
+  width: calc(40px * 903.5 / 389.59);
   height: 40px;
   max-width: min(220px, 50vw);
-  aspect-ratio: 903.5 / 389.59;
   object-fit: contain;
   object-position: left center;
   border: 0;
@@ -2974,10 +2973,9 @@ a {
 
 .footer-logo-img {
   display: block;
-  width: auto;
+  width: calc(36px * 903.5 / 389.59);
   height: 36px;
   max-width: min(240px, 58vw);
-  aspect-ratio: 903.5 / 389.59;
   object-fit: contain;
   object-position: left center;
   border: 0;
@@ -3265,6 +3263,7 @@ a {
 
   .logo-img {
     height: 34px;
+    width: calc(34px * 903.5 / 389.59);
   }
 
   .header-actions {
