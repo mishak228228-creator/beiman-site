@@ -648,10 +648,10 @@ async function syncCatalogWithApiProducts() {
     const response = await fetch("/api/products");
     if (!response.ok) return;
     const data = await response.json();
+    if (!data || data.ok !== true) return;
     const normalized = (Array.isArray(data?.products) ? data.products : [])
       .map(normalizeProductFromApi)
       .filter(Boolean);
-    if (!normalized.length) return;
     syncProductsModel(normalized);
     renderCatalogProducts(normalized);
   } catch {
