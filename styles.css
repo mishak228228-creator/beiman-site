@@ -190,6 +190,8 @@ a {
   padding: 2px 0;
   margin-right: 4px;
   border-radius: 10px;
+  border: none;
+  outline: none;
   transition: transform 0.22s ease, opacity 0.22s ease;
 }
 
@@ -210,6 +212,10 @@ a {
   max-height: 36px;
   max-width: 100%;
   object-fit: contain;
+  border: 0;
+  outline: none;
+  /* Обрезка 1px рамки-артефакта экспорта по краям файла logo-beiman.png */
+  clip-path: inset(1px);
 }
 
 .logo {
@@ -2951,6 +2957,8 @@ a {
   line-height: 0;
   color: #f2f2f2;
   margin-bottom: 20px;
+  border: none;
+  outline: none;
   transform: translate3d(0, 0, 0) scale(1);
   transform-origin: center center;
   backface-visibility: hidden;
@@ -2968,7 +2976,10 @@ a {
   max-height: 34px;
   max-width: min(200px, 52vw);
   object-fit: contain;
+  border: 0;
+  outline: none;
   filter: invert(1);
+  clip-path: inset(1px);
 }
 
 .footer-socials {
