@@ -11,6 +11,10 @@
       rel="stylesheet"
     />
     <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap"
       rel="stylesheet"
     />
@@ -24,7 +28,17 @@
     <!-- Каталог: боковые фильтры, сортировка, сетка карточек -->
     <header class="site-header" id="siteHeader">
       <div class="container header-inner">
-        <a href="#catalog" class="logo-wordmark">BEIMAN</a>
+        <a href="#catalog" class="logo-link" aria-label="BEIMAN — в каталог">
+          <img
+            class="logo-img"
+            src="/assets/logo-beiman.png"
+            width="140"
+            height="48"
+            alt="BEIMAN"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </a>
         <nav class="main-nav" aria-label="Основное меню">
           <a href="#catalog" class="is-active" data-nav-view="catalog">Каталог</a>
           <a href="#about" data-nav-view="about">О компании</a>
@@ -652,8 +666,16 @@
     <footer class="site-footer">
       <div class="container footer-grid">
         <div class="footer-col footer-col--brand">
-          <a href="#catalog" class="footer-brand">
-            <span class="footer-brand-text">BEIMAN</span>
+          <a href="#catalog" class="footer-brand" aria-label="BEIMAN — в каталог">
+            <img
+              class="footer-logo-img"
+              src="/assets/logo-beiman.png"
+              width="140"
+              height="48"
+              alt="BEIMAN"
+              loading="lazy"
+              decoding="async"
+            />
           </a>
           <div class="footer-socials">
             <a

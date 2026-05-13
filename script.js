@@ -2308,5 +2308,20 @@ resetPickupPoints();
 hidePickupSection();
 renderCheckoutOrder();
 syncBodyScrollLock();
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    document.body.style.overflow = "";
+    document.body.classList.remove("is-scroll-locked");
+    syncBodyScrollLock();
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    syncBodyScrollLock();
+  }
+});
+
 window.addEventListener("hashchange", syncRouteFromHash);
 syncRouteFromHash();
