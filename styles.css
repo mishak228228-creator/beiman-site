@@ -184,12 +184,15 @@ a {
 .logo-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   max-width: min(168px, 40vw);
+  max-height: 40px;
+  overflow: hidden;
   line-height: 0;
-  padding: 2px 0;
+  padding: 0;
   margin-right: 4px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
   outline: none;
   transition: transform 0.22s ease, opacity 0.22s ease;
@@ -214,8 +217,11 @@ a {
   object-fit: contain;
   border: 0;
   outline: none;
-  /* Обрезка 1px рамки-артефакта экспорта по краям файла logo-beiman.png */
-  clip-path: inset(1px);
+  transform: scale(1.08);
+  transform-origin: center center;
+  /* PNG с тонкой рамкой по краю canvas — срезаем сильнее + чуть увеличиваем, родитель .logo-link режет overflow */
+  clip-path: inset(4px);
+  -webkit-clip-path: inset(4px);
 }
 
 .logo {
@@ -2954,6 +2960,9 @@ a {
 .footer-brand {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  max-height: 38px;
+  overflow: hidden;
   line-height: 0;
   color: #f2f2f2;
   margin-bottom: 20px;
@@ -2979,7 +2988,10 @@ a {
   border: 0;
   outline: none;
   filter: invert(1);
-  clip-path: inset(1px);
+  transform: scale(1.08);
+  transform-origin: center center;
+  clip-path: inset(4px);
+  -webkit-clip-path: inset(4px);
 }
 
 .footer-socials {
@@ -3263,6 +3275,9 @@ a {
 
   .logo-img {
     max-height: 30px;
+    transform: scale(1.1);
+    clip-path: inset(5px);
+    -webkit-clip-path: inset(5px);
   }
 
   .header-actions {
